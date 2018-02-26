@@ -1,0 +1,125 @@
+module.exports = function solveSudoku(matrix) {
+    // your solution
+
+    var possible = [true, true, true, true, true, true, true, true, true];
+
+    var possible_array=[[],[],[],[],[],[],[],[],[]];
+    for (var i=0; i<9; i++) {
+        for (var j=0; j<9; j++) {
+            if (matrix[i][j]==0) {
+                possible_array[i][j]=[true, true, true, true, true, true, true, true, true];
+            }
+        }
+    }
+
+    function checkVertical(k,j) {
+        for (var i = 0; i < 9; i++) {
+            if (matrix[i][j] != 0) {
+                possible_array[k][j][matrix[i][j]-1] = false;
+            }
+        }
+    }
+
+    function checkHorizontal(i,k) {
+        for (var j = 0; j < 9; j++) {
+            if (matrix[i][j] != 0) {
+                possible_array[i][k][matrix[i][j]-1] = false;
+            }
+        }
+    }
+
+    function checkRectangle3x3(i, j) {
+        var begin_y = Math.floor(i / 3);
+        var begin_x = Math.floor(j / 3);
+        for (var k = begin_y * 3; k < (begin_y + 1) * 3; k++) {
+            for (var l = begin_x * 3; l < (begin_x + 1) * 3; l++) {
+                if (matrix[k][l] != 0) {
+                    possible_array[i][j][matrix[k][l]-1] = false;
+                }
+            }
+        }
+    }
+
+    var count_zeros = 0;
+    function checkNeighbors(i, j) {
+        var compare=[[],[],[],[],[],[],[],[],[]];
+        var begin_y = Math.floor(i / 3);
+        var begin_x = Math.floor(j / 3);
+        for (var m = 0; m < 9; m++) {
+            if (possible_array[i][j][m]) {
+                for (var k = begin_y * 3; k < (begin_y + 1) * 3; k++) {
+                    for (var l = begin_x * 3; l < (begin_x + 1) * 3; l++) {
+                        if (matrix[k][l] == 0) {
+                            if (k==i && l==j) {
+                                continue;
+                            }
+                            if (!possible_array[k][l][m]) {
+                                compare[m].push(true);
+                            }
+                            else {
+                                compare[m].push(false);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (var m=0; m<9; m++) {
+            if (compare[m].length!=0) {
+                for (var k=0; k<compare[m].length; k++) {
+                    if (!compare[m][k]) {
+                        break;
+                    }
+                    if (k==compare[m].length-1 && compare[m][k]) {
+                        matrix[i][j]=m+1;
+                        count_zeros -= 1;
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    for (var i = 0; i < 9; i++) {
+        for (var j = 0; j < 9; j++) {
+            if (matrix[i][j] == 0) {
+                count_zeros += 1;
+            }
+        }
+    }
+
+    do {
+        for (var i = 0; i < 9; i++) {
+            for (var j = 0; j < 9; j++) {
+
+                if (matrix[i][j] == 0) {
+                    checkVertical(i,j);
+                    checkHorizontal(i,j);
+                    checkRectangle3x3(i, j);
+                    var def = 0;
+                    var count = 0;
+                    for (var k = 0; k < 9; k++) {
+                        if (possible_array[i][j][k]) {
+                            def = k + 1;
+                            count += 1;
+                        }
+                    }
+                    if (count == 1) {
+                        matrix[i][j] = def;
+                        count_zeros -= 1;
+                        possible_array[i][j]=undefined;
+                    }
+                    def = 0;
+                    count = 0;
+                }
+                if (matrix[i][j] == 0) {
+                    checkNeighbors(i, j);
+                }
+            }
+
+        }
+    } while (count_zeros != 0)
+
+    return matrix;
+}
